@@ -29,7 +29,6 @@ def services():
     db.row_factory = sqlite3.Row
     sms = SmsSender(db)
     auth = AuthStore(db)
-    auth.ensure_admin(get_setting("ADMIN_USERNAME"), get_setting("ADMIN_PASSWORD"))
     eng = QueueEngine(db, sms)
     if eng.stats()["total"] == 0:  # demo queue so the screens are not empty
         for name in ["Walk-in A", "Walk-in B", "Walk-in C"]:
@@ -393,6 +392,9 @@ def tv_board(eng):
 
 # ---------------- app shell ----------------
 eng, auth, sms = services()
+# Runs on every page load (not inside the cached startup), so secrets added after the
+# first start still create the admin. It does nothing once an admin exists.
+auth.ensure_admin(get_setting("ADMIN_USERNAME"), get_setting("ADMIN_PASSWORD"))
 user = st.session_state.get("user")
 
 if user is None:
